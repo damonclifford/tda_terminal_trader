@@ -13,11 +13,22 @@ from datetime import datetime
 import logging
 
 from colorama import init
-from colorama import Fore, Back, Style
+from colorama import Fore, Back
 from dotenv import load_dotenv
+from prompt_toolkit import prompt
+from prompt_toolkit.shortcuts import yes_no_dialog
+from prompt_toolkit.styles import Style
+
 
 load_dotenv()
 init(autoreset=True)
+
+dialog_style = Style.from_dict({
+    'dialog':             'bg:#88ff88',
+    'dialog frame.label': 'bg:#ffffff #000000',
+    'dialog.body':        'bg:#000000 #00ff00',
+    'dialog shadow':      'bg:#00aa00',
+})
 
 REFRESH_TOKEN = os.getenv("REFRESH_TOKEN")
 CLIENT_ID = os.getenv("CLIENT_ID")
@@ -28,6 +39,7 @@ ACCOUNT_ID = os.getenv("ACCOUNT_ID")
 # This get's executed on script load, and when expired token
 # is used in api calls
 #################
+
 
 
 def getNewToken():
@@ -71,7 +83,7 @@ def grabToken():
 
 
 def title():
-    print(Style.BRIGHT + Back.GREEN + Fore.WHITE +
+    print(Back.GREEN + Fore.WHITE +
           "\n ######################### \n COMMAND LINE TRADING APP  \n ######################### ")
 
 
@@ -100,7 +112,7 @@ def positionReport():
         stringShort = f"-{[symbol][0]['shortQuantity']}"
         stringPnl = str(round([symbol][0]['currentDayProfitLoss'], 2))
         pnl = round([symbol][0]['currentDayProfitLoss'], 2)
-        print(f" --------------------------------\n {[symbol][0]['instrument']['symbol']} | Qty: { stringShort if [symbol][0]['shortQuantity'] > 0 else [symbol][0]['longQuantity']} | Market Value: {round([symbol][0]['marketValue'],2)} | Avg price: {round([symbol][0]['averagePrice'],2)} | Day PnL: $ {Style.BRIGHT + Fore.RED + stringPnl if pnl < 0 else Style.BRIGHT + Fore.GREEN + stringPnl}")
+        print(f" --------------------------------\n {[symbol][0]['instrument']['symbol']} | Qty: { stringShort if [symbol][0]['shortQuantity'] > 0 else [symbol][0]['longQuantity']} | Market Value: {round([symbol][0]['marketValue'],2)} | Avg price: {round([symbol][0]['averagePrice'],2)} | Day PnL: $ {Fore.RED + stringPnl if pnl < 0 else Fore.GREEN + stringPnl}")
 
 
 def getOrders():
@@ -344,18 +356,18 @@ def placeStopLimitTradeShares(symbol, side, stopPrice, qty):
 
 def getInput():
 
-    print(Style.BRIGHT + Fore.YELLOW + " --- MAIN MENU ---")
+    print(Fore.YELLOW + " --- MAIN MENU ---")
     prompt = input(
         " Please Select: \n Trade (t)\n Position Report (p)\n Quote (q)\n Balance Report (b)\n View Working Orders (o)\n ")
     ######### trading ############
     if prompt == "t":
         os.system('cls')
         title()
-        print(Style.BRIGHT + Fore.YELLOW + " --- Order Type Selection ---")
+        print(Fore.YELLOW + " --- Order Type Selection ---")
         type = input(
-            " Please Select: \n Market Order (m)\n Limit Order (l) \n Stop (sl) \n Cancel (c). ")
+            " Please Select: \n Market Order (m)\n Limit Order (l) \n Stop (s) \n Cancel (c). ")
         ######### stop #########
-        if type == "sl":
+        if type == "s":
             cmd = input(
                 " Enter LIMIT trade command (ex: 's 1000 fb 210.5') or (c) to cancel: ")
             if len(cmd.split()) != 4 and cmd != "c":
@@ -390,11 +402,11 @@ def getInput():
                     getInput()
         ######### limit type #########
         if type == "l":
-            print(Style.BRIGHT + Fore.YELLOW + " --- Quantity Options ---")
+            print(Fore.YELLOW + " --- Quantity Options ---")
             whichType = input(
                 " Please Select:\n Notional Quantity (n)\n Shares Quantity (s)\n Cancel (c) \n ")
             if whichType == "n":
-                print(Style.BRIGHT + Fore.YELLOW + " --- Trade Script ---")
+                print(Fore.YELLOW + " --- Trade Script ---")
                 cmd = input(
                     " Enter trade command, use $ notional value (ex: 'b 100000 fb 210.5') or (c) to cancel: ")
                 if len(cmd.split()) != 4 and cmd != "c":
@@ -410,10 +422,14 @@ def getInput():
                         printSide = "Buying"
                     if side == "s":
                         printSide = "Selling"
-                    print(Style.BRIGHT + Fore.YELLOW + " --- Confirm ---")
-                    confirmTrade = input(
-                        f" Confirm trade? [{printSide} {qty} $ worth of {symbol} at {price}] YES (y) or NO (n)")
-                    if confirmTrade == "y":
+                    print(Fore.YELLOW + " --- Confirm ---")
+
+                    confirmTrade = yes_no_dialog(
+                    title='Confirm Trade',
+                    style=dialog_style,
+                    text=f" Confirm {printSide} {qty} $ worth of {symbol} at {price}").run()
+
+                    if confirmTrade == True:
                         if side == "b":
                             cleanSide = "BUY"
                         else:
@@ -445,9 +461,13 @@ def getInput():
                         printSide = "Buying"
                     if side == "s":
                         printSide = "Selling"
-                    confirmTrade = input(
-                        f" Confirm trade? [{printSide} {qty} shares of {symbol} at {price}] YES (y) or NO (n)")
-                    if confirmTrade == "y":
+
+                    confirmTrade = yes_no_dialog(
+                    title='Confirm Trade',
+                    style=dialog_style,
+                    text=f" Confirm {printSide} {qty} shares of {symbol} at {price}").run()
+
+                    if confirmTrade == True:
                         if side == "b":
                             cleanSide = "BUY"
                         else:
@@ -475,11 +495,11 @@ def getInput():
                 getInput()
         ######### market type ###########
         if type == "m":
-            print(Style.BRIGHT + Fore.YELLOW + " --- Quantity Options ---")
+            print(Fore.YELLOW + " --- Quantity Options ---")
             whichType = input(
                 " Please Select:\n Notional Quantity (n)\n Shares Quantity (s)\n (c) Cancel\n ")
             if whichType == "n":
-                print(Style.BRIGHT + Fore.YELLOW + " --- Trade Script ---")
+                print(Fore.YELLOW + " --- Trade Script ---")
                 cmd = input(
                     " Enter trade command, use $ notional value (ex: 'b 100000 fb') or (c) to cancel: ")
                 if len(cmd.split()) != 3 and cmd != "c":
@@ -495,9 +515,13 @@ def getInput():
                         printSide = "Buying"
                     if side == "s":
                         printSide = "Selling"
-                    confirmTrade = input(
-                        f" Confirm trade? [{printSide} {qty} $ worth of {symbol} at the market] YES (y) or NO (n)")
-                if confirmTrade == "y":
+
+                    confirmTrade = yes_no_dialog(
+                    title='Confirm Trade',
+                    style=dialog_style,
+                    text=f"Confirm {printSide} {qty} $ worth of {symbol} at the market?").run()
+  
+                if confirmTrade == True:
                     if side == "b":
                         cleanSide = "BUY"
                     else:
@@ -517,7 +541,7 @@ def getInput():
                     title()
                     getInput()
             if whichType == "s":
-                print(Style.BRIGHT + Fore.YELLOW + " --- Trade Script ---")
+                print(Fore.YELLOW + " --- Trade Script ---")
                 cmd = input(
                     " Enter trade command (ex: 'b 1000 fb') or (c) to cancel: ")
                 if len(cmd.split()) != 3 and cmd != "c":
@@ -533,9 +557,13 @@ def getInput():
                         printSide = "Buying"
                     if side == "s":
                         printSide = "Selling"
-                    confirmTrade = input(
-                        f" Confirm trade? [{printSide} {qty} shares of {symbol} at the market] YES (y) or NO (n)")
-                if confirmTrade == "y":
+
+                    confirmTrade = yes_no_dialog(
+                    title='Confirm Trade',
+                    style=dialog_style,
+                    text=f" Confirm {printSide} {qty} shares of {symbol} at the market").run()
+                    
+                if confirmTrade == True:
                     if side == "b":
                         cleanSide = "BUY"
                     else:
