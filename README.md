@@ -26,6 +26,8 @@ A basic menu system is in place to navigate through the program.
 
 Step 1 - You must first have a TD Ameritrade Developer API account created, and have succesfully obtained a REFRESH TOKEN and a CLIENT ID. Once you have obtained those, update the .env file accordingly with those values in addition to your account id, prior to starting the script.
 
+*make sure and install the required libraries*
+
 Step 2 - Start the script using *python OrderTerminal.py* from your favorite command line. An api call will be made to obtain a new authorization token, and a new token.json file will be created which the script will read from on every call. If the auth token is expired, a new one will be fetch.
 
 **To-Do**
