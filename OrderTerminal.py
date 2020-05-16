@@ -24,10 +24,10 @@ load_dotenv()
 init(autoreset=True)
 
 dialog_style = Style.from_dict({
-    'dialog':             'bg:#88ff88',
+    'dialog':             'bg:#013692',
     'dialog frame.label': 'bg:#ffffff #000000',
-    'dialog.body':        'bg:#000000 #00ff00',
-    'dialog shadow':      'bg:#00aa00',
+    'dialog.body':        'bg:#000000 #ffffff',
+    'dialog shadow':      'bg:#2471e4',
 })
 
 REFRESH_TOKEN = os.getenv("REFRESH_TOKEN")
@@ -44,7 +44,7 @@ ACCOUNT_ID = os.getenv("ACCOUNT_ID")
 
 def getNewToken():
 
-    print(" Fetching new token, please wait...")
+    print(" Fetching new authorization token, please wait...")
     time.sleep(2)
 
     payload = {'grant_type': 'refresh_token', 'refresh_token': REFRESH_TOKEN,
@@ -562,7 +562,7 @@ def getInput():
                     title='Confirm Trade',
                     style=dialog_style,
                     text=f" Confirm {printSide} {qty} shares of {symbol} at the market").run()
-                    
+
                 if confirmTrade == True:
                     if side == "b":
                         cleanSide = "BUY"
